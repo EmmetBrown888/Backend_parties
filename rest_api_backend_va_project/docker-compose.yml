@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:12
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: 19661966
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+  django:
+    container_name: va_backend
+    build:
+      context: ./
+      dockerfile: DockerFile
+    command: bash -c "
+             python /usr/src/Backend_DRF_v2/manage.py makemigrations --noinput &&
+             python /usr/src/Backend_DRF_v2/manage.py migrate --noinput &&
+             python /usr/src/Backend_DRF_v2/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/Backend_DRF_v2
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+  redis:
+    image: redis
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379"
+  celery:
+    restart: always
+    build:
+        context: .
+        dockerfile: DockerFile
+    command: celery -A rest_api_backend_va_project worker -l info
+    volumes:
+        - .:/usr/src/Backend_DRF_v2
+    depends_on:
+        - db
+        - redis
+        - django
+volumes:
+  postgres_data:
+
