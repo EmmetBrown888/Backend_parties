@@ -1,4 +1,4 @@
-# Backend_DRF_v2
+# Backend_parties
 ## Getting Started
 ```
 docker-compose up --build
